@@ -41,6 +41,7 @@ body {
     position: relative;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(20px);
+    overflow: auto;
 }
 
 /* --- SCREENS & UTILS --- */
@@ -68,14 +69,12 @@ body {
 
 /* --- PROGRESS BAR --- */
 .progress-container {
-    width: 100%;
+    width: 121%;
     height: 8px;
     background: var(--m3-secondary);
-    margin-top: 20px; 
     margin-bottom: -24px;
     overflow: hidden;
     flex-shrink: 0;
-    border-radius: 0 0 10px 10px;
 }
 
 #progress-bar {
@@ -355,8 +354,8 @@ input:checked + .slider:before {
 
 /* --- POPUP STYLES --- */
 .popup-overlay {
+    display: none;
     position: absolute;
-    bottom: -100%;
     left: 0;
     width: 100%;
     height: auto;
@@ -371,6 +370,7 @@ input:checked + .slider:before {
 }
 
 .popup-overlay.show {
+    display: block;
     bottom: 0;
 }
 
