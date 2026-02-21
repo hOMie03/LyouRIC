@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="material">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyouRIC - Lyrics Editor</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="./images/small-logo.png" type="image/x-icon">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="theme-switch-wrapper">
+            <span class="mode-label">Material</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-checkbox" onclick="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+            <span class="mode-label">Liquid</span>
+        </div>
+
+        <div id="file-screen" class="screen active">
+            <h2>Upload Audio</h2>
+            <div class="setup-controls">
+                Select Music File
+                <input type="file" id="audio-file" accept="audio/*">
+            </div>
+            <button class="btn-primary" onclick="initSync()">Start Syncing</button>
+            &nbsp;
+            <button class="btn-restart" onclick="window.location.href='index.html'">Back to Lyrics</button>
+        </div>
+
+        <div id="sync-screen" class="screen">
+            <div id="sync-area">
+                <div class="label-text">PLAYING NOW</div>
+                <div id="previous-line" class="syncing-now-text">---</div>
+
+                <div class="label-text">NEXT TARGET</div>
+                <div id="display-container"></div>
+            </div>
+
+            <div class="controls">
+                <audio id="player" controls></audio>
+                <button id="tap-button" onclick="handleTap()">TAP BEAT</button>
+                <div class="button-group">
+                    <button onclick="window.location.href='index.html'" class="btn-restart">Restart</button>
+                    <button id="download-btn" class="btn-primary" style="display:none;"
+                        onclick="downloadLRC()">Download</button>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="material">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyouRIC - Lyrics Editor</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="./images/small-logo.png" type="image/x-icon">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="theme-switch-wrapper">
+            <span class="mode-label">Material</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-checkbox" onclick="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+            <span class="mode-label">Liquid</span>
+        </div>
+
+        <div id="setup-screen" class="screen active">
+            <img src="./images/logo.gif" alt="logo" width="120">
+            <textarea id="lyrics-text" placeholder="Paste lyrics here... don't add [Verse 1], [Chorus] for word-to-word sync"></textarea>
+
+            <div class="setup-controls">
+                Sync Mode
+                <select id="sync-mode">
+                    <option value="line">Line-by-Line</option>
+                    <option value="word">Word-by-Word</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="goToEditor()">Pick Audio</button>
+        </div>
+
+        <div id="info-popup" class="popup-overlay">
+            <div class="popup-content">
+                <h3>Welcome to LyouRIC</h3>
+                <p>Your minimalist companion for syncing lyrics with precision. Upload your audio, tap to the beat, and download your .lrc file instantly.</p>
+                <p>made with <3 by omi :)</p>
+                <button class="btn-primary" onclick="closePopup()">Got it!</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
