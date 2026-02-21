@@ -83,7 +83,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function formatLrcTime(seconds) {
     const min = Math.floor(seconds / 60).toString().padStart(2, '0');
     const sec = Math.floor(seconds % 60).toString().padStart(2, '0');
-    const ms = Math.floor((seconds % 1) * 100).toString().padStart(2, '0');
+    const ms = Math.floor((seconds % 1) * 1000).toString().padStart(3, '0');
     return `[${min}:${sec}.${ms}]`;
 }
 
@@ -107,7 +107,7 @@ function initSync() {
     }));
 
     // Standard starting point: ♪ at 00:00.00
-    lyricsArray = [{ text: "♪", words: [{ word: "♪", time: "[00:00.00]" }], time: "[00:00.00]" }, ...userLyrics];
+    lyricsArray = [{ text: "♪", words: [{ word: "♪", time: "[00:00.000]" }], time: "[00:00.000]" }, ...userLyrics];
 
     lineIdx = 1;
     wordIdx = -1;
@@ -193,15 +193,30 @@ function renderLyrics() {
 
 function finishSync() {
     let output = "";
-    lyricsArray.forEach((line) => {
+    lyricsArray.forEach((line, index) => {
         if (mode === 'line') {
             output += `${line.time}${line.text}\n`;
         } else {
+            // Start the line with the line timestamp
             let lineStr = `${line.time}`;
+            
+            // Loop through each word
             line.words.forEach(w => {
                 const tag = (w.time || line.time).replace('[', '<').replace(']', '>');
                 lineStr += `${tag}${w.word} `;
             });
+
+            // LOOK AHEAD: Get the start time of the NEXT line to close this line
+            const nextLine = lyricsArray[index + 1];
+            if (nextLine && nextLine.time) {
+                const closingTag = nextLine.time.replace('[', '<').replace(']', '>');
+                lineStr = lineStr.trim() + closingTag; 
+            } else if (index === lyricsArray.length - 1) {
+                // If it's the very last line, use the player's total duration or current time
+                const finalTag = formatLrcTime(player.duration || player.currentTime).replace('[', '<').replace(']', '>');
+                lineStr = lineStr.trim() + finalTag;
+            }
+
             output += lineStr.trim() + "\n";
         }
     });
