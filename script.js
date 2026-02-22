@@ -100,24 +100,42 @@ function initSync() {
     }
 
     const lines = rawText.split('\n').filter(l => l.trim() !== "");
-    const userLyrics = lines.map(line => ({
-        text: line.trim(),
-        words: line.trim().split(/\s+/).map(w => ({ word: w, time: "" })),
-        time: ""
-    }));
+    let processedLyrics = [];
 
-    // Standard starting point: ♪ at 00:00.00
-    lyricsArray = [{ text: "♪", words: [{ word: "♪", time: "[00:00.000]" }], time: "[00:00.000]" }, ...userLyrics];
+    lines.forEach(line => {
+        // Create the standard line object
+        const lineObj = {
+            text: line.trim(),
+            words: line.trim().split(/\s+/).map(w => ({ word: w, time: "" })),
+            time: ""
+        };
+        processedLyrics.push(lineObj);
+
+        // If in Adlib mode, inject a "." line immediately after
+        if (mode === 'adlib') {
+            processedLyrics.push({
+                text: ".",
+                words: [{ word: ".", time: "" }],
+                time: ""
+            });
+        }
+    });
+
+    // Per your preference: Always start the [Music] on 00:00.00
+    lyricsArray = [
+        { text: "♪", words: [{ word: "♪", time: "[00:00.000]" }], time: "[00:00.000]" }, 
+        ...processedLyrics
+    ];
 
     lineIdx = 1;
     wordIdx = -1;
 
     player.src = URL.createObjectURL(file);
 
-    // Switch screens in editor.html
     document.getElementById('file-screen').classList.remove('active');
     document.getElementById('sync-screen').classList.add('active');
 
+    // Adlib uses word-mode visualization for the tapping process
     displayContainer.className = (mode === 'line') ? 'line-mode' : 'word-mode';
     renderLyrics();
 }
@@ -156,7 +174,7 @@ function updateProgress() {
     const activeProgressBar = document.getElementById('progress-bar');
     if (!activeProgressBar) return;
 
-    const total = lyricsArray.length;
+    const total = lyricsArray.length - 1;
     const current = lineIdx;
     
     // Ensure we don't divide by zero and calculate percentage
@@ -193,34 +211,57 @@ function renderLyrics() {
 
 function finishSync() {
     let output = "";
+    const currentMode = sessionStorage.getItem('syncMode'); // Get mode from session
+
     lyricsArray.forEach((line, index) => {
-        if (mode === 'line') {
+        if (currentMode === 'line') {
             output += `${line.time}${line.text}\n`;
-        } else {
-            // Start the line with the line timestamp
+        } 
+        else if (currentMode === 'word') {
+            // Standard Word-by-Word logic
             let lineStr = `${line.time}`;
-            
-            // Loop through each word
             line.words.forEach(w => {
                 const tag = (w.time || line.time).replace('[', '<').replace(']', '>');
                 lineStr += `${tag}${w.word} `;
             });
-
-            // LOOK AHEAD: Get the start time of the NEXT line to close this line
+            output += appendClosingTag(lineStr, index) + "\n";
+        } 
+        else if (currentMode === 'adlib') {
+            // NEW: Adlibs Word-to-Word logic
+            // Format: [bg:<00:00.000>Word, <00:00.000>Word]
+            let adlibParts = [];
+            line.words.forEach(w => {
+                const tag = (w.time || line.time).replace('[', '<').replace(']', '>');
+                adlibParts.push(`${tag}${w.word}`);
+            });
+            
+            let lineStr = `[bg:${adlibParts.join(' ')}`;
+            
+            // Add closing timestamp without the closing '>' to match your [bg:<...>word] format
             const nextLine = lyricsArray[index + 1];
+            let closingTS = "";
             if (nextLine && nextLine.time) {
-                const closingTag = nextLine.time.replace('[', '<').replace(']', '>');
-                lineStr = lineStr.trim() + closingTag; 
-            } else if (index === lyricsArray.length - 1) {
-                // If it's the very last line, use the player's total duration or current time
-                const finalTag = formatLrcTime(player.duration || player.currentTime).replace('[', '<').replace(']', '>');
-                lineStr = lineStr.trim() + finalTag;
+                closingTS = nextLine.time.replace('[', '<').replace(']', '>'); 
+            } else {
+                closingTS = formatLrcTime(player.duration || player.currentTime).replace('[', '<').replace(']', '>');
             }
-
-            output += lineStr.trim() + "\n";
+            
+            output += `${lineStr} ${closingTS}]\n`;
         }
     });
     finalLrc = output;
+}
+
+// Helper to keep code clean
+function appendClosingTag(lineStr, index) {
+    const nextLine = lyricsArray[index + 1];
+    if (nextLine && nextLine.time) {
+        const closingTag = nextLine.time.replace('[', '<').replace(']', '>');
+        return lineStr.trim() + closingTag;
+    } else {
+        const finalTag = formatLrcTime(player.duration || player.currentTime).replace('[', '<').replace(']', '>');
+        return lineStr.trim() + finalTag;
+    }
 }
 
 function downloadLRC() {
